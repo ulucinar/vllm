@@ -783,7 +783,9 @@ class ModelConfig:
         # Init multimodal config if needed
         if self._model_info.supports_multimodal:
             self.hf_image_processor_config = get_hf_image_processor_config(
-                self.model, hf_token=self.hf_token, revision=self.revision
+                self.hf_config_path or self.model,
+                hf_token=self.hf_token,
+                revision=self._hf_config_revision or self.revision,
             )
             if (
                 mm_encoder_tp_mode == "data"

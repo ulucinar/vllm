@@ -311,22 +311,24 @@ def get_quant_config(
         assert isinstance(online_args, QuantizationConfigArgs)
         return OnlineQuantizationConfig(args=online_args)
 
+    config_source = model_config.hf_config_path or model_config.model
+    config_revision = model_config._hf_config_revision or model_config.revision
     model_name_or_path = (
         maybe_download_from_modelscope(
-            model_config.model,
-            revision=model_config.revision,
+            config_source,
+            revision=config_revision,
             download_dir=load_config.download_dir,
             allow_patterns=["*.json"],
         )
-        or model_config.model
+        or config_source
     )
     is_local = os.path.isdir(model_name_or_path)
     if not is_local:
         # Download the config files.
-        with get_lock(model_config.model, load_config.download_dir):
+        with get_lock(config_source, load_config.download_dir):
             hf_folder = hf_api().snapshot_download(
-                model_config.model,
-                revision=model_config.revision,
+                config_source,
+                revision=config_revision,
                 allow_patterns="*.json",
                 cache_dir=load_config.download_dir,
                 local_files_only=huggingface_hub.constants.HF_HUB_OFFLINE,
